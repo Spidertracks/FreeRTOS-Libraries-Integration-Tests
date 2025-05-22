@@ -164,7 +164,9 @@
 /**
  * @brief Timeout for receiving CONNACK packet in milli seconds.
  */
-#define CONNACK_RECV_TIMEOUT_MS             ( 1000U )
+#ifndef CONNACK_RECV_TIMEOUT_MS
+    #define CONNACK_RECV_TIMEOUT_MS             ( 1000U )
+#endif
 
 /**
  * @brief Time interval in seconds at which an MQTT PINGREQ need to be sent to
@@ -1076,9 +1078,7 @@ TEST( MqttTest, MQTT_Connect_LWT )
                                                                                 &testHostInfo,
                                                                                 testParam.pNetworkCredentials ) );
 
-    /* Establish MQTT session on top of the TCP+TLS connection. */
     useLWTClientIdentifier = true;
-    establishMqttSession( &secondMqttContext, testParam.pSecondNetworkContext, true, &sessionPresent );
 
     /* Subscribe to LWT Topic. */
     TEST_ASSERT_EQUAL( MQTTSuccess, subscribeToTopic(
@@ -1107,8 +1107,15 @@ TEST( MqttTest, MQTT_Connect_LWT )
         }
     }while( ( xMQTTStatus == MQTTSuccess ) || ( xMQTTStatus == MQTTNeedMoreBytes ) );
 
-    TEST_ASSERT_TRUE( ( xMQTTStatus == MQTTSuccess ) || ( xMQTTStatus == MQTTNeedMoreBytes ) );
-    TEST_ASSERT_TRUE( receivedSubAck );
+    TEST_ASSERT_TRUE((xMQTTStatus == MQTTSuccess) || (xMQTTStatus == MQTTNeedMoreBytes));
+    TEST_ASSERT_TRUE(receivedSubAck);
+
+    /* Establish MQTT session on top of the TCP+TLS connection and delay 10s. */
+    establishMqttSession(&secondMqttContext, testParam.pSecondNetworkContext, true, &sessionPresent);
+
+    entryTime = FRTest_GetTimeMs();
+    while (FRTest_GetTimeMs() < (entryTime + 10000U)) {
+    }
 
     /* Abruptly terminate TCP connection. */
     ( void ) ( *testParam.pNetworkDisconnect )( testParam.pSecondNetworkContext );
