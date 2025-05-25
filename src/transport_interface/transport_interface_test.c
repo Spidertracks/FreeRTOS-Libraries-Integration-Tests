@@ -103,7 +103,9 @@
  * and response from the network. The delay time should be long enough to cover different
  * network environment.
  */
+#ifndef TRANSPORT_TEST_NETWORK_DELAY_MS
 #define TRANSPORT_TEST_NETWORK_DELAY_MS            ( 3000U )
+#endif
 
 /**
  * @brief Number of simultaneous tasks for multithreaded tests.
